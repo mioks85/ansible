@@ -14,6 +14,9 @@ Vagrant.configure("2") do |config|
     dockerhost.vm.provision "shell", inline: <<-SHELL
       apt-get update
       apt-get install -y snmpd tmux mc wget tree git
+      sudo apt install apt-transport-https ca-certificates curl gnupg
+      curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+      apt-get update
       apt-get install -y docker-ce docker-ce-cli containerd.io
       systemctl enable docker
       systemctl start docker
