@@ -1,0 +1,89 @@
+Vagrant.configure("2") do |config|
+
+  # Docker host (Debian 12)
+  config.vm.define "moks-dockerhost" do |dockerhost|
+    dockerhost.vm.box = "generic/debian12"
+    dockerhost.vm.network "private_network", ip: "10.10.10.130", virtualbox__intnet: "ansible_moks"
+    dockerhost.vm.hostname = "moks-dockerhost"
+    dockerhost.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "8192"]  
+      vb.customize ["modifyvm", :id, "--cpus", "4"]      
+      vb.name = "moks-dockerhost"
+    end
+    dockerhost.vm.synced_folder "./docker_data", "/vagrant_data"
+    dockerhost.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y snmpd tmux mc wget tree git
+      apt-get install -y docker-ce docker-ce-cli containerd.io
+      systemctl enable docker
+      systemctl start docker
+    SHELL
+  end
+
+  # Ansible machine (Debian 12)
+  config.vm.define "moks-ansible" do |ansible|
+    ansible.vm.box = "generic/debian12"
+    ansible.vm.network "private_network", ip: "10.10.10.131", virtualbox__intnet: "ansible_moks"
+    ansible.vm.hostname = "moks-ansible"
+    ansible.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "2048"]  
+      vb.customize ["modifyvm", :id, "--cpus", "2"]      
+      vb.name = "sinunimi-ansible"
+    end
+    ansible.vm.synced_folder "./ansible_data", "/vagrant_data"
+    ansible.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y snmpd tmux mc wget tree git
+      apt-get install -y ansible sshpass yamllint ansible-lint
+    SHELL
+  end
+
+  # Ubuntu 24.04 VM
+  config.vm.define "moks-ubuntu" do |ubuntu|
+    ubuntu.vm.box = "generic/ubuntu2204"
+    ubuntu.vm.network "private_network", ip: "10.10.10.132", virtualbox__intnet: "ansible_moks"
+    ubuntu.vm.hostname = "moks-ubuntu"
+    ubuntu.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "2048"]  
+      vb.customize ["modifyvm", :id, "--cpus", "2"]     
+      vb.name = "moks-ubuntu"
+    end
+    ubuntu.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y snmpd tmux mc wget tree git
+    SHELL
+  end
+
+  # CentOS Stream 9 VM
+  config.vm.define "moks-centos" do |centos|
+    centos.vm.box = "generic-x64/centos9s"
+    centos.vm.network "private_network", ip: "10.10.10.133", virtualbox__intnet: "ansible_moks"
+    centos.vm.hostname = "moks-centos"
+    centos.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "2048"]  
+      vb.customize ["modifyvm", :id, "--cpus", "2"]     
+      vb.name = "moks-centos"
+    end
+    centos.vm.provision "shell", inline: <<-SHELL
+      yum update -y
+      yum install -y snmpd tmux mc wget tree git
+    SHELL
+  end
+
+  # OpenSUSE Leap VM
+  config.vm.define "moks-opensuse" do |opensuse|
+    opensuse.vm.box = "opensuse/Leap-15.2.x86_64"
+    opensuse.vm.network "private_network", ip: "10.10.10.134", virtualbox__intnet: "ansible_moks"
+    opensuse.vm.hostname = "moks-opensuse"
+    opensuse.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "2048"]  
+      vb.customize ["modifyvm", :id, "--cpus", "2"]      
+      vb.name = "moks-opensuse"
+    end
+    opensuse.vm.provision "shell", inline: <<-SHELL
+      zypper refresh
+      zypper install -y snmpd tmux mc wget tree git
+    SHELL
+  end
+
+end
